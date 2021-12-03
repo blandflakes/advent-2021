@@ -6,15 +6,15 @@ object Day2 extends IOApp {
   case class Position(x: Int, z: Int)
   case class Aimed(position: Position, aim: Int)
   sealed abstract class Instruction(val magnitude: Int) extends Product {
-    def day1Op(position: Position): Position
-    def day2Op(aimed: Aimed): Aimed
+    def part1Op(position: Position): Position
+    def part2Op(aimed: Aimed): Aimed
   }
   case class Forward(override val magnitude: Int)
       extends Instruction(magnitude) {
-    override def day1Op(position: Position): Position =
+    override def part1Op(position: Position): Position =
       position.copy(x = position.x + magnitude)
 
-    override def day2Op(aimed: Aimed): Aimed = {
+    override def part2Op(aimed: Aimed): Aimed = {
       aimed.copy(
         position = aimed.position
           .copy(
@@ -25,25 +25,25 @@ object Day2 extends IOApp {
     }
   }
   case class Back(override val magnitude: Int) extends Instruction(magnitude) {
-    override def day1Op(position: Position): Position =
+    override def part1Op(position: Position): Position =
       position.copy(x = position.x - magnitude)
 
-    override def day2Op(aimed: Aimed): Aimed =
-      aimed.copy(position = day1Op(aimed.position))
+    override def part2Op(aimed: Aimed): Aimed =
+      aimed.copy(position = part1Op(aimed.position))
   }
   case class Down(override val magnitude: Int) extends Instruction(magnitude) {
-    override def day1Op(position: Position): Position =
+    override def part1Op(position: Position): Position =
       position.copy(z = position.z + magnitude)
 
-    override def day2Op(aimed: Aimed): Aimed =
+    override def part2Op(aimed: Aimed): Aimed =
       aimed.copy(aim = aimed.aim + magnitude)
   }
 
   case class Up(override val magnitude: Int) extends Instruction(magnitude) {
-    override def day1Op(position: Position): Position =
+    override def part1Op(position: Position): Position =
       position.copy(z = position.z - magnitude)
 
-    override def day2Op(aimed: Aimed): Aimed =
+    override def part2Op(aimed: Aimed): Aimed =
       aimed.copy(aim = aimed.aim - magnitude)
   }
 
@@ -59,27 +59,27 @@ object Day2 extends IOApp {
           case "up"      => Up(magnitude)
         }
       }
-    val day1 = commands
+    val part1 = commands
       .fold(Position(0, 0)) { case (currentPosition, instruction) =>
-        instruction.day1Op(currentPosition)
+        instruction.part1Op(currentPosition)
       }
       .map(p => p.x * p.z)
       .compile
       .last
       .map(println)
 
-    val day2 = commands
+    val part2 = commands
       .fold(Aimed(Position(0, 0), aim = 0)) {
         case (currentPosition, instruction) =>
-          instruction.day2Op(currentPosition)
+          instruction.part2Op(currentPosition)
       }
       .map(p => p.position.x * p.position.z)
       .compile
       .last
       .map(println)
     for {
-      _ <- day1
-      _ <- day2
+      _ <- part1
+      _ <- part2
     } yield ExitCode.Success
   }
 }
