@@ -1,14 +1,14 @@
 import cats.effect.{ExitCode, IO, IOApp}
 import fs2.io.file.Path
-import grids.orthogonalPoints
+import grids.{ArrayGrid, Grid, orthogonalPoints}
 
 object Day9 extends IOApp {
   override def run(args: List[String]): IO[ExitCode] = {
 
-    def pointsInBasin(nadir: (Int, Int), grid: Array[Array[Int]]): List[(Int, Int)] = {
-      val nadirHeight = grid(nadir._1)(nadir._2)
+    def pointsInBasin(nadir: (Int, Int), grid: Grid[Int]): List[(Int, Int)] = {
+      val nadirHeight = grid(nadir._1, nadir._2)
       val includedNeighbors = orthogonalPoints(nadir._1, nadir._2, grid).toList.filter { case (y, x) =>
-        val height = grid(y)(x)
+        val height = grid(y, x)
         height > nadirHeight && height < 9
       }
       nadir :: includedNeighbors.flatMap(n => pointsInBasin(n, grid))
@@ -20,14 +20,15 @@ object Day9 extends IOApp {
         .compile
         .toList
         .map(_.toArray)
-      allPoints = grid.indices.flatMap(y => grid(0).indices.map(x => (y, x)))
+        .map(a => new ArrayGrid(a))
+      allPoints = grid.wrapped.indices.flatMap(y => grid.wrapped(0).indices.map(x => (y, x)))
       pointsWithNeighbors = allPoints.map(p => (p, orthogonalPoints(p._1, p._2, grid)))
       lowestPoints = pointsWithNeighbors
         .filter { case (p, neighbors) =>
-          neighbors.map { case (y, x) => grid(y)(x) }.min > grid(p._1)(p._2)
+          neighbors.map { case (y, x) => grid(y, x) }.min > grid(p._1, p._2)
         }
         .map(_._1)
-      lowestHeights = lowestPoints.map(p => grid(p._1)(p._2))
+      lowestHeights = lowestPoints.map(p => grid(p._1, p._2))
       riskLevels = lowestHeights.map(_ + 1)
 
       _ = println(riskLevels.sum)
