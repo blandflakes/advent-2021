@@ -37,7 +37,7 @@ object Day15 extends IOApp {
       grid: Grid[Int]
   ): Option[Int] = {
     // Might be better to have some kind of sorted structure here
-    openList.filterNot(p => visited(p.coordinates)).sortBy(_.costSoFar) match {
+    openList.sortBy(_.costSoFar) match {
       case Nil => None
       case head :: _ if head.coordinates == target =>
         Some(head.costSoFar)
@@ -51,6 +51,7 @@ object Day15 extends IOApp {
         lowestRisk(target, unvisited, updatedVisited, grid)
     }
   }
+
   override def run(args: List[String]): IO[ExitCode] = {
     for {
       grid <- io
