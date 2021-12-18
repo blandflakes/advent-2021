@@ -1,26 +1,31 @@
 import scala.reflect.ClassTag
 
 package object grids {
-  def orthogonalPoints[T](rowIndex: Int, colIndex: Int, grid: Array[Array[T]]): IndexedSeq[(Int, Int)] = {
-    val horizontal =
-      Math.max(rowIndex - 1, 0) to Math.min(rowIndex + 1, grid.length - 1) zip Iterator.continually(colIndex)
-    val vertical = Iterator.continually(rowIndex) zip
-      (Math.max(colIndex - 1, 0) to Math.min(colIndex + 1, grid(rowIndex).length - 1))
+  // Grids are usually parsed such that the "outside" is the y, because I'm too lazy to do any kind of inversion.
+  // Returns (y, x)
+  def orthogonalPoints[T](y: Int, x: Int, grid: Array[Array[T]]): IndexedSeq[(Int, Int)] = {
+    val ys =
+      Math.max(y - 1, 0) to Math.min(y + 1, grid.length - 1) zip Iterator.continually(x)
+    val xs = Iterator.continually(y) zip
+      (Math.max(x - 1, 0) to Math.min(x + 1, grid(y).length - 1))
 
-    (horizontal ++ vertical).filterNot { case (x, y) => x == rowIndex && y == colIndex }
+    (ys ++ xs).filterNot { case (ny, nx) => ny == y && nx == x }
   }
 
-  def allNeighborPoints[T](rowIndex: Int, colIndex: Int, grid: Array[Array[T]]): IndexedSeq[(Int, Int)] = {
-    (Math.max(rowIndex - 1, 0) to Math.min(rowIndex + 1, grid.length - 1))
-      .flatMap { x =>
-        val row = grid(x)
-        (Math.max(colIndex - 1, 0) to Math.min(colIndex + 1, row.length - 1)).map { y =>
-          (x, y)
+  // Returns (y, x)
+  def allNeighborPoints[T](y: Int, x: Int, grid: Array[Array[T]]): IndexedSeq[(Int, Int)] = {
+    (Math.max(y - 1, 0) to Math.min(y + 1, grid.length - 1))
+      .flatMap { ny =>
+        val row = grid(ny)
+        (Math.max(x - 1, 0) to Math.min(x + 1, row.length - 1)).map { nx =>
+          (ny, nx)
         }
       }
-      .filterNot { case (x, y) => x == rowIndex && y == colIndex }
+      .filterNot { case (ny, nx) => ny == y && nx == x }
   }
 
   def mapGrid[T1, T2: ClassTag](grid: Array[Array[T1]])(f: T1 => T2): Array[Array[T2]] =
     grid.map(l => l.map(f))
+
+  def showGrid[T](grid: Array[Array[T]]): String = grid.map(_.mkString).mkString("\n")
 }
